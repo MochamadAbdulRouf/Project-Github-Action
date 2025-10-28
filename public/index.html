@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Timer</title>
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2913/2913008.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom right, #6b21a8, #1f2937);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      animation: fadeIn 1s ease-in;
+      cursor: url('https://cdn-icons-png.flaticon.com/512/709/709496.png'), auto;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      animation: slideDown 0.8s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .timer {
+      font-size: 4rem;
+      font-family: monospace;
+      margin: 1rem 0;
+      animation: popIn 0.8s ease-in-out;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      margin: 0.25rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+    }
+    .btn:hover {
+      transform: scale(1.05);
+    }
+    .btn-start {
+      background-color: #10b981;
+      color: white;
+    }
+    .btn-start:hover {
+      background-color: #059669;
+      color: white;
+    }
+    .btn-reset {
+      background-color: transparent;
+      border: 2px solid white;
+      color: white;
+    }
+    .btn-reset:hover {
+      background-color: white;
+      color: #1f2937;
+    }
+    .btn-mode {
+      background-color: #4b5563;
+      color: white;
+    }
+    .btn-mode.active {
+      background-color: #6366f1;
+    }
+    .btn-mode:hover:not(.active) {
+      background-color: #6b7280;
+      color: white;
+    }
+    .modal {
+      background: rgba(0, 0, 0, 0.7);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #1f2937;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: left;
+      width: 90%;
+      max-width: 300px;
+      animation: scaleIn 0.3s ease-in-out;
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-content label {
+      display: block;
+      margin: 0.5rem 0 0.2rem;
+    }
+    .modal-content input {
+      width: 100%;
+      padding: 0.3rem;
+      margin-bottom: 1rem;
+    }
+    .btn-settings {
+      background-color: #f59e0b;
+      color: white;
+    }
+    .btn-settings:hover {
+      background-color: #d97706;
+      color: white;
+    }
+
+    .workspace-anim {
+      margin-top: 20px;
+      width: 250px;
+      height: 250px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.6/lottie.min.js"></script>
+</head>
+<body>
+  <h1 id="mode-title">Time to Focus</h1>
+  <div class="timer" id="timer">25:00</div>
+  <div>
+    <button class="btn btn-start" id="start-pause"><i class="fas fa-play"></i> Start</button>
+    <button class="btn btn-reset" id="reset"><i class="fas fa-undo"></i> Reset</button>
+    <button class="btn btn-settings" id="settings-btn"><i class="fas fa-cog"></i> Settings</button>
+  </div>
+  <div style="margin-top: 1rem;">
+    <button class="btn btn-mode active" data-mode="Focus">Focus</button>
+    <button class="btn btn-mode" data-mode="Short Break">Short Break</button>
+    <button class="btn btn-mode" data-mode="Long Break">Long Break</button>
+  </div>
+
+  <div id="animation-container" class="workspace-anim"></div>
+
+  <div class="modal" id="settings-modal">
+    <div class="modal-content">
+      <h5>Set Timer Durations (in minutes)</h5>
+      <label for="focus-time">Focus:</label>
+      <input type="number" id="focus-time" value="25" />
+      <label for="short-break-time">Short Break:</label>
+      <input type="number" id="short-break-time" value="5" />
+      <label for="long-break-time">Long Break:</label>
+      <input type="number" id="long-break-time" value="15" />
+      <button class="btn btn-start" id="save-settings">Save</button>
+    </div>
+  </div>
+
+  <script>
+  // --- Ambil Elemen dari HTML ---
+const modeTitle = document.getElementById('mode-title');
+const timerDisplay = document.getElementById('timer');
+const startPauseBtn = document.getElementById('start-pause');
+const resetBtn = document.getElementById('reset');
+const modeButtons = document.querySelectorAll('.btn-mode');
+const settingsBtn = document.getElementById('settings-btn');
+const settingsModal = document.getElementById('settings-modal');
+const saveSettingsBtn = document.getElementById('save-settings');
+const animationContainer = document.getElementById('animation-container');
+const focusInput = document.getElementById('focus-time');
+const shortBreakInput = document.getElementById('short-break-time');
+const longBreakInput = document.getElementById('long-break-time');
+
+// --- Variabel State Timer ---
+let durations = {
+  'Focus': parseInt(focusInput.value) * 60,
+  'Short Break': parseInt(shortBreakInput.value) * 60,
+  'Long Break': parseInt(longBreakInput.value) * 60
+};
+
+// PERUBAHAN KUNCI: Buat objek untuk menyimpan state setiap mode
+let states = {
+  'Focus': { timeLeft: durations['Focus'], isRunning: false },
+  'Short Break': { timeLeft: durations['Short Break'], isRunning: false },
+  'Long Break': { timeLeft: durations['Long Break'], isRunning: false }
+};
+
+let currentMode = 'Focus';
+let timerInterval = null;
+let currentAnimation = null;
+
+const lottiePlayers = {
+    'Focus': 'https://assets7.lottiefiles.com/packages/lf20_kyu7xb1v.json',
+    'Short Break': 'https://lottie.host/ad9323a3-f871-4e97-b86f-3d239e07a058/4t0WkXDEO3.json',
+    'Long Break': 'https://lottie.host/56e790f4-a9bf-4a10-9df7-470732525592/bjCTJCIfn1.json'
+};
+
+// --- Fungsi ---
+function loadAnimation(mode) {
+    if (currentAnimation) currentAnimation.destroy();
+    currentAnimation = lottie.loadAnimation({
+        container: animationContainer,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: lottiePlayers[mode]
+    });
+}
+
+function updateTimerDisplay() {
+  // Selalu ambil timeLeft dari state mode yang sedang aktif
+  const timeLeft = states[currentMode].timeLeft;
+  const min = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+  const sec = String(timeLeft % 60).padStart(2, '0');
+  timerDisplay.textContent = `${min}:${sec}`;
+  document.title = `${min}:${sec} - ${currentMode}`;
+}
+
+function startTimer() {
+  if (states[currentMode].isRunning || timerInterval) return;
+  states[currentMode].isRunning = true;
+  updateStartPauseButton();
+
+  timerInterval = setInterval(() => {
+    states[currentMode].timeLeft--;
+    updateTimerDisplay();
+
+    if (states[currentMode].timeLeft <= 0) {
+      pauseTimer(); // Berhenti dulu
+      states[currentMode].isRunning = false;
+      alert(`${currentMode} finished!`);
+      // Reset waktu mode yang selesai ke durasi penuhnya
+      states[currentMode].timeLeft = durations[currentMode];
+      updateTimerDisplay();
+      updateStartPauseButton();
+    }
+  }, 1000);
+}
+
+function pauseTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  if(states[currentMode]) {
+    states[currentMode].isRunning = false;
+  }
+  updateStartPauseButton();
+}
+
+function resetTimer() {
+  pauseTimer();
+  // Reset hanya state dari mode yang aktif
+  states[currentMode].timeLeft = durations[currentMode];
+  states[currentMode].isRunning = false;
+  updateTimerDisplay();
+}
+
+function updateStartPauseButton() {
+    if (states[currentMode].isRunning) {
+        startPauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+    } else {
+        startPauseBtn.innerHTML = '<i class="fas fa-play"></i> Start';
+    }
+}
+
+// --- Event Listeners ---
+startPauseBtn.addEventListener('click', () => {
+  if (states[currentMode].isRunning) {
+    pauseTimer();
+  } else {
+    startTimer();
+  }
+});
+
+resetBtn.addEventListener('click', resetTimer);
+
+modeButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // PERUBAHAN KUNCI: Jeda timer mode lama sebelum berpindah
+    pauseTimer();
+
+    modeButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMode = btn.getAttribute('data-mode');
+
+    // Update UI sesuai mode baru
+    modeTitle.textContent = `Time to ${currentMode}`;
+    loadAnimation(currentMode);
+    
+    // PERUBAHAN KUNCI: Update tampilan dengan state yang tersimpan, BUKAN di-reset
+    updateTimerDisplay();
+    updateStartPauseButton();
+  });
+});
+
+settingsBtn.addEventListener('click', () => {
+    pauseTimer();
+    settingsModal.style.display = 'flex';
+});
+
+saveSettingsBtn.addEventListener('click', () => {
+    durations['Focus'] = parseInt(focusInput.value) * 60;
+    durations['Short Break'] = parseInt(shortBreakInput.value) * 60;
+    durations['Long Break'] = parseInt(longBreakInput.value) * 60;
+
+    // Update state timeLeft HANYA jika timer tidak sedang berjalan
+    for (const mode in states) {
+        if (!states[mode].isRunning) {
+            states[mode].timeLeft = durations[mode];
+        }
+    }
+    
+    updateTimerDisplay();
+    settingsModal.style.display = 'none';
+});
+
+settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) {
+        settingsModal.style.display = 'none';
+    }
+});
+
+// Inisialisasi tampilan awal
+updateTimerDisplay();
+loadAnimation(currentMode);
+  </script>
+</body>
+<div class="footer">
+  Build with ❤️ By Rouf<br>
+  Aplikasi Versi 2.0
+</div>
+</html>
