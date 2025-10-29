@@ -17,3 +17,4 @@
 5. Hasilnya ketika workflow github action saya berhasil bekerja setelah mengalami beberapa error
 ![documentation-1](./image/2.png)
 ![documentation-2](./image/3.png)
+![documentation-3](./image/4.png)
