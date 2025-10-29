@@ -27,5 +27,5 @@ jobs:
         with: 
           context: . 
           push: true 
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/github-action-nodejs:1.0
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/github-action-nodejs
 
