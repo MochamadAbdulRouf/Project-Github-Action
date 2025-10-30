@@ -17,6 +17,9 @@ jobs:
     steps:
 
       # Langkah 1 : Checkout atau Mengunduh kode dari Repository 
+      # Kode uses didalam steps berisi Perintah menjalankan sebuah Action 
+      # Jadi uses didalam action tersebut ada Script yang menjalankan tugas sesuai namanya
+      # Seperti Checkout dibawah ini berguna untuk mengunduh kode yang ada di repo
       - name: Checkout repository 
         uses: actions/checkout@v4
 
@@ -38,5 +41,5 @@ jobs:
         with: 
           context: . 
           push: true 
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/github-action-nodejs:3.0
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/github-action-nodejs:4.0
 
