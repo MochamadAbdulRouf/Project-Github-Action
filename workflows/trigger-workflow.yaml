@@ -1,0 +1,30 @@
+# Berikut ini hanyalah contoh-contoh trigger Github Action 
+
+# 1. Menggunakan Pull Request
+# Ini berguna untuk melakuka tes ke kode beru sebelum kode itu digabungkan (merge)
+on:
+  pull_request:
+    branches:
+      - main
+
+# 2. Pemicu Manual (workflow_dispatch)
+# Ini adalah trigger yang sangat berguna, ini memungkinkan menjalankan workflow berjalan kapanpun
+# secara manual, Bukan secara otomatis. Berguna untuk Men-Deploy ke Server Production dan Menjalankan 
+# Script Maintenance yang berat.
+on:
+  workflow_dispatch:
+
+# 3. Membuat Jadwal Menjalankan Workflow
+# ini adalah cara trigger dengan menggunakan CronJob, ini Berguna untuk tugas yang harus berjalan secara berskala.
+on:
+  schedule:
+    # Menjalankan setiap jam 6 pagi UTC setiap hari
+    - cron: '0 6 * * *'
+
+# 4. Trigger Workflow Github Action Secara otomatis 
+# Ini adalah cara trigger dengan otomatis ketika melakukan push kode terbaru ke Repo.
+on: 
+  push:
+    branches: 
+      - main 
+
