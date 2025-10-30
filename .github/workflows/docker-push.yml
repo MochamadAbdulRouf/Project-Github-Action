@@ -3,10 +3,7 @@ name: Build and Push Docker Image
 # Pemicu Workflow ini berjalan
 # Contoh disini ketika ada push ke branch main maka akan memicu workflow
 on: 
-  push: 
-    branches: 
-      - main
-
+  workflow_dispatch:
 
 jobs: 
   docker: 
@@ -41,5 +38,5 @@ jobs:
         with: 
           context: . 
           push: true 
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/github-action-nodejs:4.0
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/github-action-nodejs:5.0
 
